@@ -1,4 +1,25 @@
-from typing import Any, Dict, List
+from functools import wraps
+from typing import Dict, List, Callable
+
+
+def check_callback(f: Callable) -> Callable:
+    event = f.__name__
+
+    @wraps(f)
+    def _inner(self, *args, **kwargs):
+        if f'before_{event}' in self.cbsMap.keys():
+            for cb in self.cbsMap[f'before_{event}']:
+                getattr(cb, f'before_{event}')(*args, **kwargs)
+
+        result = f(self, **kwargs)
+
+        if f'after_{event}' in self.cbsMap.keys():
+            for cb in self.cbsMap[f'after_{event}']:
+                getattr(cb, f'after_{event}')(result)
+
+        return result
+
+    return _inner
 
 
 class CallBack:
@@ -53,15 +74,3 @@ class WorkFlow:
     def remove_cbs(self, cb_types: List[type]):
         for cb_type in cb_types:
             self.remove_cb(cb_type)
-
-    def call_event(self, event: str, *args, **kwargs) -> Any:
-        if f'before_{event}' in self.cbsMap.keys():
-            for cb in self.cbsMap[f'before_{event}']:
-                getattr(cb, f'before_{event}')(*args, **kwargs)
-
-        result = getattr(self, event)(*args, **kwargs)
-
-        if f'after_{event}' in self.cbsMap.keys():
-            for cb in self.cbsMap[f'after_{event}']:
-                getattr(cb, f'after_{event}')(*result)
-        return result
