@@ -65,11 +65,11 @@ class WorkFlow:
         return [self.add_cb(cb) for cb in cbs]
 
     def remove_cb(self, cb_type: type):
-        def _func(x): return x.name != cb_type.__name__
+        _f = lambda x: x.name != cb_type.__name__
         for event in self.cbsMap.keys():
             self.cbsMap[event] = list(
-                filter(_func, self.cbsMap[event]))
-        self.cbs = list(filter(_func, self.cbs))
+                filter(_f, self.cbsMap[event]))
+        self.cbs = list(filter(_f, self.cbs))
 
     def remove_cbs(self, cb_types: List[type]):
         for cb_type in cb_types:
